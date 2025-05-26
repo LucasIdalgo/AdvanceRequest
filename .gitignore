@@ -1,0 +1,58 @@
+###############
+# API (Visual Studio / .NET)
+###############
+
+API/.vs/
+API/bin/
+API/obj/
+API/*.user
+API/*.suo
+API/*.cache
+API/*.log
+API/*.dbmdl
+API/TestResults/
+API/*.ncb
+API/*.opendb
+API/*.VC.db
+API/*.VC.opendb
+API/.vscode/
+
+# ASP.NET
+API/App_Data/
+API/App_Start/
+API/packages/
+API/project.lock.json
+API/project.fragment.lock.json
+API/artifacts/
+
+# NuGet
+API/packages/
+API/*.nupkg
+API/PackageOutput/
+API/.nuget/
+
+# Rider (JetBrains)
+API/.idea/
+
+###############
+# Front (React + Vite + TypeScript)
+###############
+
+Front/node_modules/
+Front/dist/
+Front/.vite/
+Front/.vscode/
+Front/.idea/
+Front/coverage/
+Front/*.tsbuildinfo
+
+# Ambiente e logs
+Front/.env
+Front/.env.*
+Front/npm-debug.log*
+Front/yarn-debug.log*
+Front/yarn-error.log*
+Front/pnpm-debug.log*
+Front/.pnpm-debug.log*
+
+############
