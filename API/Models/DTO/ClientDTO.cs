@@ -2,10 +2,9 @@
 {
     public class ClientDTO
     {
-        public int clientId { get; set; }
-        public required string name { get; set; }
-        public required string doc { get; set; }
-        public required string email { get; set; }
-        public required string password { get; set; }
+        public int ClientId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }

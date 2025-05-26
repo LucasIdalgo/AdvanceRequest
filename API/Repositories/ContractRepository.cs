@@ -1,37 +1,98 @@
-﻿using API.Models;
+﻿using API.DataBase;
+using API.Models;
+using API.Models.DTO;
+using API.Models.Requests;
+using API.Models.Responses;
 using API.Repositories.Interfaces;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
     public class ContractRepository : IContractRepository
     {
-        public List<Contract> GetAllContracts()
+        private readonly DesafioContext _db;
+        private readonly IMapper _mapper;
+        public ContractRepository(DesafioContext db, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _db = db;
+            _mapper = mapper;
         }
 
-        public List<Contract> GetAllContractByClient(int IdCliente)
+        public ResponseAll<ContractDTO> GetAllContracts(UrlQuery query)
         {
-            throw new NotImplementedException();
+            var retorno = new ResponseAll<ContractDTO>();
+            var item = _db.Contract.AsNoTracking().AsQueryable();
+
+            var pagination = new Pagination
+            {
+                Page = query.Page,
+                LimitByPages = query.Limit,
+                Total = item.Count(),
+                TotalPages = (int)Math.Ceiling((double)item.Count() / query.Limit)
+            };
+
+            item = item.Skip((query.Page - 1) * query.Limit).Take(query.Limit);
+
+            retorno.Pagination = pagination;
+            retorno.Data = _mapper.Map<List<Contract>, List<ContractDTO>>(item.ToList());
+
+            return retorno;
+        }
+
+        public ResponseAll<ContractDTO> GetAllContractByClient(int IdClient, UrlQuery query)
+        {
+            var retorno = new ResponseAll<ContractDTO>();
+            var item = _db.Contract.AsNoTracking().Where(c => c.ClientId == IdClient).AsQueryable();
+
+            var pagination = new Pagination
+            {
+                Page = query.Page,
+                LimitByPages = query.Limit,
+                Total = item.Count(),
+                TotalPages = (int)Math.Ceiling((double)item.Count() / query.Limit)
+            };
+
+            item = item.Skip((query.Page - 1) * query.Limit).Take(query.Limit);
+
+            retorno.Pagination = pagination;
+            retorno.Data = _mapper.Map<List<Contract>, List<ContractDTO>>(item.ToList());
+
+            return retorno;
         }
 
         public Contract GetContract(int Id)
         {
-            throw new NotImplementedException();
+            return _db.Contract.AsNoTracking().FirstOrDefault(c => c.ContractId == Id);
         }
 
-        public void PostContract(Contract Contract)
+        public void PostContract(ContractDTO Contract)
         {
-            throw new NotImplementedException();
+            _db.Contract.Add(_mapper.Map<ContractDTO, Contract>(Contract));
+
+            foreach (var installment in Contract.Installments)
+                _db.Installment.Add(_mapper.Map<InstallmentDTO, Installment>(installment));
+
+            _db.SaveChanges();
         }
 
-        public void PutContract(Contract Contract)
+        public void PutContract(ContractDTO Contract)
         {
-            throw new NotImplementedException();
+            _db.Contract.Update(_mapper.Map<ContractDTO, Contract>(Contract));
+
+            foreach (var installment in Contract.Installments)
+                _db.Installment.Update(_mapper.Map<InstallmentDTO, Installment>(installment));
+
+            _db.SaveChanges();
         }
+
         public void DeleteContract(int Id)
         {
-            throw new NotImplementedException();
+            var contract = GetContract(Id);
+            contract.Active = false;
+
+            _db.Contract.Update(contract);
+            _db.SaveChanges();
         }
     }
 }

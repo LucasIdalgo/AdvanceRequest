@@ -10,7 +10,7 @@ namespace API.Helppers.Mapper
         {
             CreateMap<Client, ClientDTO>();
             CreateMap<Contract, ContractDTO>();
-            CreateMap<Installments, InstallmentsDTO>();
+            CreateMap<Installment, InstallmentDTO>();
             CreateMap<AdvanceRequest, AdvanceRequestDTO>();
         }
     }

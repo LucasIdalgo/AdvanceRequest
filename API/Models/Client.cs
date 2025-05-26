@@ -11,9 +11,6 @@ namespace API.Models
         public string Name { get; set; } = string.Empty;
 
         [Required]
-        public string Doc { get; set; } = string.Empty;
-
-        [Required]
         public string Email { get; set; }= string.Empty;
 
         [Required]

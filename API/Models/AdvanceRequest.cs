@@ -11,6 +11,9 @@ namespace API.Models
         [ForeignKey("Contract")]
         public int ContractId { get; set; }
 
+        [Required]
+        public int InstallmentQuantity { get; set; }
+
         [ForeignKey("Client")]
         public int ClientId { get; set; }
 
