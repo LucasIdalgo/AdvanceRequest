@@ -86,6 +86,25 @@ namespace API.Repositories
             _db.SaveChanges();
         }
 
+        public void PutContract(List<AdvanceRequestDTO> advanceRequests)
+        {
+            foreach (var advanceRequest in advanceRequests)
+            {
+                var contract = GetContract(advanceRequest.ContractId);
+
+                for(int i = contract.Installments.Count; i > advanceRequest.InstallmentQuantity; i--)
+                {
+                    contract.Installments[i].Antecipated = true;
+                    contract.Installments[i].Status = "paid";
+                }
+
+                foreach (var installment in contract.Installments)
+                    _db.Installment.Update(installment);
+            }
+
+            _db.SaveChanges();
+        }
+
         public void DeleteContract(int Id)
         {
             var contract = GetContract(Id);

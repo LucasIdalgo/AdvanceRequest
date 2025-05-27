@@ -12,5 +12,7 @@ namespace API.Repositories.Interfaces
         public void PostAdvanceRequest(AdvanceRequestDTO AdvanceRequest);
         public void PutAdvanceRequest(List<AdvanceRequestDTO> AdvanceRequest);
         public void DeleteAdvanceRequest(int Id);
+
+        public bool PendentAdvanceRequestByClient(int IdClient);
     }
 }

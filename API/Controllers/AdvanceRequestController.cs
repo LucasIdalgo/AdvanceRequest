@@ -3,6 +3,7 @@ using API.Models.DTO;
 using API.Models.Requests;
 using API.Repositories.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -11,13 +12,19 @@ namespace API.Controllers
     public class AdvanceRequestController : ControllerBase
     {
         private readonly IAdvanceRequestRepository _advanceRequestRepository;
+        private readonly IClientRepository _clientRepository;
+        private readonly IContractRepository _contractRepository;
         private readonly IMapper _mapper;
-        public AdvanceRequestController(IAdvanceRequestRepository advanceRequestRepository, IMapper mapper)
+        public AdvanceRequestController(IAdvanceRequestRepository advanceRequestRepository, IClientRepository clientRepository,
+                                        IContractRepository contractRepository, IMapper mapper)
         {
             _advanceRequestRepository = advanceRequestRepository;
+            _clientRepository = clientRepository;
+            _contractRepository = contractRepository;
             _mapper = mapper;
         }
 
+        [Authorize]
         [HttpGet(Name = "GetAllAdvanceRequests")]
         public ActionResult GetAllAdvanceRequests([FromQuery] UrlQuery query)
         {
@@ -28,6 +35,7 @@ namespace API.Controllers
             return Ok(item);
         }
 
+        [Authorize]
         [HttpGet("{Id}", Name = "GetAdvanceRequest")]
         public ActionResult GetAdvanceRequest(int Id)
         {
@@ -38,15 +46,25 @@ namespace API.Controllers
             return Ok(advanceRequestDTO);
         }
 
+        [Authorize]
         [HttpPost(Name = "PostAdvanceRequest")]
         public ActionResult PostAdvanceRequest([FromBody] AdvanceRequestDTO advanceRequest)
         {
+            var client = _clientRepository.GetClientByEmail(User.Identity.Name);
+
+            if (advanceRequest.ClientId != client.ClientId)
+                return BadRequest("Cliente não pode solicitar antecipação para outro cliente");
+
+            if (_advanceRequestRepository.PendentAdvanceRequestByClient(client.ClientId))
+                return BadRequest("Cliente possui solicitação pendente.");
+
             _advanceRequestRepository.PostAdvanceRequest(advanceRequest);
 
             return CreatedAtRoute(routeName: "GetAdvanceRequest", routeValues: new { Id = advanceRequest.AdvanceRequestId }, value: advanceRequest);
         }
 
-        [HttpPut("/approve", Name = "PutAdvanceRequest")]
+        [Authorize]
+        [HttpPut("approve", Name = "PutAdvanceRequest")]
         public ActionResult PutAdvanceRequest([FromBody] List<AdvanceRequestDTO> advanceRequest)
         {
             foreach (var item in advanceRequest)
@@ -57,9 +75,12 @@ namespace API.Controllers
 
             _advanceRequestRepository.PutAdvanceRequest(advanceRequest);
 
+            _contractRepository.PutContract(advanceRequest);
+
             return Ok();
         }
 
+        [Authorize]
         [HttpDelete("{Id}", Name = "DeleteAdvanceRequest")]
         public ActionResult DeleteAdvanceRequest(int Id)
         {

@@ -12,6 +12,7 @@ namespace API.Repositories.Interfaces
         public Contract GetContract(int Id);
         public void PostContract(ContractDTO Contract);
         public void PutContract(ContractDTO Contract);
+        public void PutContract(List<AdvanceRequestDTO> advanceRequests);
         public void DeleteContract(int Id);
     }
 }

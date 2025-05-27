@@ -3,6 +3,7 @@ using API.Models.DTO;
 using API.Models.Requests;
 using API.Repositories.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -18,6 +19,7 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+        [Authorize]
         [HttpGet(Name ="GetAllContracts")]
         public ActionResult GetAllContracts([FromQuery] UrlQuery query)
         {
@@ -28,6 +30,7 @@ namespace API.Controllers
             return Ok(item);
         }
 
+        [Authorize]
         [HttpGet(Name = "GetAllContractByClient")]
         public ActionResult GetAllContractByClient([FromQuery] int IdClient, [FromQuery] UrlQuery query)
         {
@@ -38,6 +41,7 @@ namespace API.Controllers
             return Ok(item);
         }
 
+        [Authorize]
         [HttpGet("{Id}", Name ="GetContract")]
         public ActionResult GetContract(int Id)
         {
@@ -48,6 +52,7 @@ namespace API.Controllers
             return Ok(contractDTO);
         }
 
+        [Authorize]
         [HttpPost(Name ="PostContract")]
         public ActionResult PostContract([FromBody] ContractDTO contract)
         {
@@ -56,6 +61,7 @@ namespace API.Controllers
             return CreatedAtRoute(routeName: "GetContract", routeValues: new { Id = contract.ContractId}, value: contract);
         }
 
+        [Authorize]
         [HttpPut("{Id}", Name ="PutContract")]
         public ActionResult PutContract(int Id, [FromBody] ContractDTO contract)
         {
@@ -68,6 +74,7 @@ namespace API.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpDelete("{Id}", Name = "DeleteContract")]
         public ActionResult DeleteContract(int Id)
         {

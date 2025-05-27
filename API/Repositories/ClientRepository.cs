@@ -4,6 +4,7 @@ using API.Models;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Repositories
 {
@@ -11,10 +12,12 @@ namespace API.Repositories
     {
         private readonly DesafioContext _db;
         private readonly IMapper _mapper;
-        public ClientRepository(DesafioContext db, IMapper mapper)
+        private readonly PasswordHasher<ClientDTO> _hasher;
+        public ClientRepository(DesafioContext db, IMapper mapper, PasswordHasher<ClientDTO> hasher)
         {
             _db = db;
             _mapper = mapper;
+            _hasher = hasher;
         }
 
         public Client GetClient(int Id)
@@ -22,8 +25,22 @@ namespace API.Repositories
             return _db.Client.AsNoTracking().FirstOrDefault(c => c.ClientId == Id);
         }
 
+        public Client GetClientByEmail(string Email)
+        {
+            return _db.Client.AsNoTracking().FirstOrDefault(c => c.Email == Email);
+        }
+
+        public bool Login(ClientDTO Client, ClientLoginDTO login)
+        {
+            var result = _hasher.VerifyHashedPassword(Client, Client.Password, login.Password);
+            if (result == PasswordVerificationResult.Failed) return false;
+
+            return true;
+        }
+
         public void PostClient(ClientDTO Client)
         {
+            Client.Password = _hasher.HashPassword(Client, Client.Password);
             _db.Client.Add(_mapper.Map<ClientDTO, Client>(Client));
             _db.SaveChanges();
         }

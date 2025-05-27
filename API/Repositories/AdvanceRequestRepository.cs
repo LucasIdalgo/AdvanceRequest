@@ -69,5 +69,14 @@ namespace API.Repositories
         {
             _db.AdvanceRequest.Remove(GetAdvanceRequest(Id));
         }
+
+        public bool PendentAdvanceRequestByClient(int IdClient)
+        {
+            var advanceRequest = _db.AdvanceRequest.AsNoTracking().FirstOrDefault(a => a.ClientId == IdClient && !a.Approve);
+            if (advanceRequest != null)
+                return true;
+
+            return false;
+        }
     }
 }
