@@ -31,7 +31,7 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpGet(Name = "GetAllContractByClient")]
+        [HttpGet("ByClient", Name = "GetAllContractByClient")]
         public ActionResult GetAllContractByClient([FromQuery] int IdClient, [FromQuery] UrlQuery query)
         {
             var item = _contractRepository.GetAllContractByClient(IdClient, query);

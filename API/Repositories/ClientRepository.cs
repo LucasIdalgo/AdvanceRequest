@@ -12,12 +12,11 @@ namespace API.Repositories
     {
         private readonly DesafioContext _db;
         private readonly IMapper _mapper;
-        private readonly PasswordHasher<ClientDTO> _hasher;
-        public ClientRepository(DesafioContext db, IMapper mapper, PasswordHasher<ClientDTO> hasher)
+        private readonly PasswordHasher<ClientDTO> _hasher = new();
+        public ClientRepository(DesafioContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;
-            _hasher = hasher;
         }
 
         public Client GetClient(int Id)
