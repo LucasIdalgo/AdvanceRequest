@@ -34,6 +34,10 @@ Este projeto foi desenvolvido como parte de um desafio técnico, com o objetivo 
 ### Backend (.NET)
 
 ```bash
-cd ./backend
 dotnet restore
 dotnet run
+
+cd ./frontend
+npm install
+npm run dev
+
