@@ -7,8 +7,8 @@ namespace API.Repositories.Interfaces
 {
     public interface IContractRepository
     {
-        public ResponseAll<ContractDTO> GetAllContracts(UrlQuery query);
-        public ResponseAll<ContractDTO> GetAllContractByClient(int IdClient, UrlQuery query);
+        public ResponseDefaultAll<List<ContractDTO>> GetAllContracts(UrlQuery query);
+        public ResponseDefaultAll<List<ContractDTO>> GetAllContractByClient(int IdClient, UrlQuery query);
         public Contract GetContract(int Id);
         public void PostContract(ContractDTO Contract);
         public void PutContract(ContractDTO Contract);

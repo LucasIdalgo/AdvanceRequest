@@ -7,7 +7,7 @@ namespace API.Repositories.Interfaces
 {
     public interface IAdvanceRequestRepository
     {
-        public ResponseAll<AdvanceRequestDTO> GetAllAdvanceRequest(UrlQuery query);
+        public ResponseDefaultAll<List<AdvanceRequestDTO>> GetAllAdvanceRequest(UrlQuery query);
         public AdvanceRequest GetAdvanceRequest(int Id);
         public void PostAdvanceRequest(AdvanceRequestDTO AdvanceRequest);
         public void PutAdvanceRequest(List<AdvanceRequestDTO> AdvanceRequest);

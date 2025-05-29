@@ -19,9 +19,9 @@ namespace API.Repositories
             _mapper = mapper;
         }
 
-        public ResponseAll<AdvanceRequestDTO> GetAllAdvanceRequest(UrlQuery query)
+        public ResponseDefaultAll<List<AdvanceRequestDTO>> GetAllAdvanceRequest(UrlQuery query)
         {
-            var retorno = new ResponseAll<AdvanceRequestDTO>();
+            var retorno = new ResponseDefaultAll<List<AdvanceRequestDTO>>();
             var item = _db.AdvanceRequest.AsNoTracking().AsQueryable();
 
             var pagination = new Pagination
@@ -29,17 +29,16 @@ namespace API.Repositories
                 Page = query.Page,
                 LimitByPages = query.Limit,
                 Total = item.Count(),
-                TotalPages = (int)Math.Ceiling((double)item.Count() / query.Limit)
+                TotalPages = item.Count() > 0 ? (int)Math.Ceiling((double)item.Count() / query.Limit) : 0
             };
 
             item = item.Skip((query.Page - 1) * query.Limit).Take(query.Limit);
 
             retorno.Pagination = pagination;
-            retorno.Data = _mapper.Map<List<AdvanceRequest>, List<AdvanceRequestDTO>>(item.ToList());
+            retorno.Data = item.Count() > 0 ? _mapper.Map<List<AdvanceRequest>, List<AdvanceRequestDTO>>(item.ToList()) : null;
 
             return retorno;
         }
-
         public AdvanceRequest GetAdvanceRequest(int Id)
         {
             return _db.AdvanceRequest.AsNoTracking().FirstOrDefault(a => a.AdvanceRequestId == Id);

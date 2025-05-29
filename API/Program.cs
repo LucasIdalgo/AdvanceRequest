@@ -30,19 +30,24 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
+        ValidIssuer = jwtConfig["Issuer"],
         ValidateAudience = true,
+        ValidAudience = jwtConfig["Audience"],
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtConfig["Issuer"],
-        ValidAudience = jwtConfig["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
     };
 });
 builder.Services.AddAuthorization();
 
-// Add services to the container.
+//CORS
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("AllowFrontend", policy => { policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod(); });
+});
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt =>
 {
@@ -70,7 +75,7 @@ builder.Services.AddSwaggerGen(opt =>
     });
 });
 
-builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
+//builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 builder.Services.AddDbContext<DesafioContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddSingleton(mapper);
 
@@ -81,7 +86,6 @@ builder.Services.AddScoped<IAdvanceRequestRepository, AdvanceRequestRepository>(
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -92,12 +96,16 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseStatusCodePages();
-app.UseMvc();
 app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
+
+//app.UseMvc();
+app.UseRouting();
+app.UseCors("AllowFrontend");
+//app.UseCors(opt => { opt.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); });
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStatusCodePages();
+
+app.UseEndpoints(e => { e.MapControllers(); });
 
 app.Run();

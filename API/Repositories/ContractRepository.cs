@@ -19,9 +19,9 @@ namespace API.Repositories
             _mapper = mapper;
         }
 
-        public ResponseAll<ContractDTO> GetAllContracts(UrlQuery query)
+        public ResponseDefaultAll<List<ContractDTO>> GetAllContracts(UrlQuery query)
         {
-            var retorno = new ResponseAll<ContractDTO>();
+            var retorno = new ResponseDefaultAll<List<ContractDTO>>();
             var item = _db.Contract.AsNoTracking().AsQueryable();
 
             var pagination = new Pagination
@@ -29,20 +29,20 @@ namespace API.Repositories
                 Page = query.Page,
                 LimitByPages = query.Limit,
                 Total = item.Count(),
-                TotalPages = (int)Math.Ceiling((double)item.Count() / query.Limit)
+                TotalPages = item.Count() > 0 ? (int)Math.Ceiling((double)item.Count() / query.Limit) : 0
             };
 
             item = item.Skip((query.Page - 1) * query.Limit).Take(query.Limit);
 
             retorno.Pagination = pagination;
-            retorno.Data = _mapper.Map<List<Contract>, List<ContractDTO>>(item.ToList());
+            retorno.Data = item.Count() > 0 ? _mapper.Map<List<Contract>, List<ContractDTO>>(item.ToList()) : null;
 
             return retorno;
         }
 
-        public ResponseAll<ContractDTO> GetAllContractByClient(int IdClient, UrlQuery query)
+        public ResponseDefaultAll<List<ContractDTO>> GetAllContractByClient(int IdClient, UrlQuery query)
         {
-            var retorno = new ResponseAll<ContractDTO>();
+            var retorno = new ResponseDefaultAll<List<ContractDTO>>();
             var item = _db.Contract.AsNoTracking().Where(c => c.ClientId == IdClient).AsQueryable();
 
             var pagination = new Pagination
@@ -50,13 +50,20 @@ namespace API.Repositories
                 Page = query.Page,
                 LimitByPages = query.Limit,
                 Total = item.Count(),
-                TotalPages = (int)Math.Ceiling((double)item.Count() / query.Limit)
+                TotalPages = item.Count() > 0 ? (int)Math.Ceiling((double)item.Count() / query.Limit) : 0
             };
 
             item = item.Skip((query.Page - 1) * query.Limit).Take(query.Limit);
 
             retorno.Pagination = pagination;
-            retorno.Data = _mapper.Map<List<Contract>, List<ContractDTO>>(item.ToList());
+            retorno.Data = item.Count() > 0 ? _mapper.Map<List<Contract>, List<ContractDTO>>(item.ToList()) : null;
+
+            if (retorno.Data != null)
+                foreach (var contract in retorno.Data)
+                {
+                    var item2 = _db.Installment.AsNoTracking().Where(i => i.ContractId == contract.ContractId && i.Status=="open").AsQueryable();
+                    contract.Installments = _mapper.Map<List<Installment>, List<InstallmentDTO>>(item2.ToList());
+                }
 
             return retorno;
         }
@@ -68,12 +75,20 @@ namespace API.Repositories
 
         public void PostContract(ContractDTO Contract)
         {
-            _db.Contract.Add(_mapper.Map<ContractDTO, Contract>(Contract));
+            var contract = _mapper.Map<ContractDTO, Contract>(Contract);
+            _db.Contract.Add(contract);
+            _db.SaveChanges();
 
             foreach (var installment in Contract.Installments)
+            {
+                installment.ContractId = contract.ContractId;
                 _db.Installment.Add(_mapper.Map<InstallmentDTO, Installment>(installment));
+            }
+
+            Contract = _mapper.Map<Contract, ContractDTO>(contract);
 
             _db.SaveChanges();
+
         }
 
         public void PutContract(ContractDTO Contract)
@@ -92,7 +107,7 @@ namespace API.Repositories
             {
                 var contract = GetContract(advanceRequest.ContractId);
 
-                for(int i = contract.Installments.Count; i > advanceRequest.InstallmentQuantity; i--)
+                for (int i = contract.Installments.Count; i > advanceRequest.InstallmentQuantity; i--)
                 {
                     contract.Installments[i].Antecipated = true;
                     contract.Installments[i].Status = "paid";

@@ -1,5 +1,6 @@
 ﻿using API.Models;
 using API.Models.DTO;
+using API.Models.Responses;
 using API.Repositories.Interfaces;
 using API.Services;
 using AutoMapper;
@@ -25,25 +26,49 @@ namespace API.Controllers
         public ActionResult GetClient(int Id)
         {
             var client = _clientRepository.GetClient(Id);
-            if (client == null) return NotFound();
+            if (client == null)
+                return NotFound(new ResponseDefault<ClientDTO>
+                {
+                    Status = NotFound().StatusCode.ToString(),
+                    Message = "Usuário não encontrado"
+                });
 
             ClientDTO clientDTO = _mapper.Map<Client, ClientDTO>(client);
-            return Ok(clientDTO);
+            return Ok(new ResponseDefault<ClientDTO>
+            {
+                Status = Ok().StatusCode.ToString(),
+                Message = "Sucesso",
+                Data = clientDTO
+            });
         }
 
         [AllowAnonymous]
         [HttpGet("login", Name = "ClientLogin")]
-        public ActionResult ClientLogin(ClientLoginDTO login)
+        public ActionResult ClientLogin([FromQuery] ClientLoginDTO login)
         {
             var client = _clientRepository.GetClientByEmail(login.Email);
-            if (client == null) return Unauthorized("Email ou senha inválidos");
+            if (client == null)
+                return Unauthorized(new ResponseDefault<ClientDTO>
+                {
+                    Status = Unauthorized().StatusCode.ToString(),
+                    Message = "Usuário não cadastrado"
+                });
 
             if (!_clientRepository.Login(_mapper.Map<Client, ClientDTO>(client), login))
-                return Unauthorized("Email ou senha inválidos");
+                return Unauthorized(new ResponseDefault<ClientDTO>
+                {
+                    Status = Unauthorized().StatusCode.ToString(),
+                    Message = "Email ou senha inválidos"
+                });
 
             var Token = _token.GenerateToken(client.Email);
 
-            return Ok(Token);
+            return Ok(new ResponseDefault<ClientTokenDTO>
+            {
+                Data = new ClientTokenDTO { ClientId = client.ClientId, Name = client.Name, Token = Token },
+                Status = Ok().StatusCode.ToString(),
+                Message = "Token gerado"
+            });
         }
 
         [AllowAnonymous]
@@ -51,24 +76,38 @@ namespace API.Controllers
         public ActionResult PostClient([FromBody] ClientDTO client)
         {
             if (_clientRepository.GetClientByEmail(client.Email) != null)
-                return BadRequest("Usuário já existe");
+                return BadRequest(new ResponseDefault<ClientDTO>
+                {
+                    Status = BadRequest().StatusCode.ToString(),
+                    Message = "Usuário já existe"
+                });
 
             _clientRepository.PostClient(client);
 
             return CreatedAtRoute(routeName: "GetClient", routeValues: new { Id = client.ClientId }, value: client);
         }
 
-        [Authorize]
+        
         [HttpPut("{Id}", Name = "PutClient")]
         public ActionResult PutClient(int Id, [FromBody] ClientDTO client)
         {
             var obj = _clientRepository.GetClient(Id);
-            if (obj == null) return NotFound();
+            if (obj == null)
+                return NotFound(new ResponseDefault<ClientDTO>
+                {
+                    Status = NotFound().StatusCode.ToString(),
+                    Message = "Usuário não encontrado"
+                });
 
             client.ClientId = Id;
             _clientRepository.PutClient(client);
 
-            return Ok();
+            return Ok(new ResponseDefault<ClientDTO>
+            {
+                Data = client,
+                Status = Ok().StatusCode.ToString(),
+                Message = "Usuário alterado com sucesso"
+            });
         }
     }
 }
