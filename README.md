@@ -6,7 +6,7 @@ Este projeto foi desenvolvido como parte de um desafio técnico, com o objetivo 
 
 ### 🧑 Cadastro e Autenticação
 - Registro de novos usuários via e-mail e senha
-- 
+  
 ### 📄 Contratos
 - Criação de contratos com valor total e número de parcelas (máx. 12)
 - Cálculo automático do valor de cada parcela
