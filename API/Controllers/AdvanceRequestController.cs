@@ -95,6 +95,13 @@ namespace API.Controllers
         [HttpPut("approve", Name = "PutAdvanceRequest")]
         public ActionResult PutAdvanceRequest([FromBody] List<AdvanceRequestDTO> advanceRequest)
         {
+            if (advanceRequest == null)
+                return BadRequest(new ResponseDefault<List<AdvanceRequestDTO>>
+                {
+                    Status = BadRequest().StatusCode.ToString(),
+                    Message = "Lista de antecipações não pode ser nulo"
+                });
+
             foreach (var item in advanceRequest)
             {
                 var obj = _advanceRequestRepository.GetAdvanceRequest(item.AdvanceRequestId);

@@ -70,7 +70,10 @@ namespace API.Repositories
 
         public Contract GetContract(int Id)
         {
-            return _db.Contract.AsNoTracking().FirstOrDefault(c => c.ContractId == Id);
+            var contract = _db.Contract.AsNoTracking().FirstOrDefault(c => c.ContractId == Id);
+            contract.Installments = _db.Installment.AsNoTracking().Where(i => i.ContractId == Id).ToList();
+
+            return contract;
         }
 
         public void PostContract(ContractDTO Contract)
@@ -107,10 +110,10 @@ namespace API.Repositories
             {
                 var contract = GetContract(advanceRequest.ContractId);
 
-                for (int i = contract.Installments.Count; i > advanceRequest.InstallmentQuantity; i--)
+                for (int i = 0; i < advanceRequest.InstallmentQuantity; i++)
                 {
-                    contract.Installments[i].Antecipated = true;
-                    contract.Installments[i].Status = "paid";
+                    contract.Installments[contract.Installments.Count - i].Antecipated = true;
+                    contract.Installments[contract.Installments.Count - i].Status = "paid";
                 }
 
                 foreach (var installment in contract.Installments)
